@@ -1,0 +1,19 @@
+SELECT AccountNumberMajor
+		, sec.Cusip
+		, sec.name
+		, sec.instrument_type
+		, sec.currency
+		, psr.sector_lehman2_name
+		, psr.country
+		, psr.barclays_rating
+		, avg(Weight*100) as WeightPct
+		, sum(LocalContrib*100) as LocalReturnBps
+		, sum(BaseContrib*100) as BaseReturnBps
+FROM [internalstorage].[hiPerform].[security_returns] (nolock) ret 
+LEFT JOIN TRPRef.security.v_security_master (nolock) sec ON ret.trpref_secid=sec.security_id 
+LEFT JOIN [internalstorage].[firef].[prud_security_rpt] (nolock) psr ON sec.Cusip=psr.cusip and ret.PHPeriod=psr.effective_date
+WHERE PHPeriod>='2019-12-01' AND PHPeriod<='2019-12-31'
+AND AccountNumberMajor='LUXGMSB'
+AND accountNumberMinor=''
+GROUP BY AccountNumberMajor, sec.cusip, name, sec.instrument_type, currency, psr.sector_lehman2_name, psr.country, psr.barclays_rating
+ORDER BY currency, name;
